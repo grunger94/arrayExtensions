@@ -66,15 +66,19 @@ module.exports = function(grunt) {
    watch: {
             files: '**/*.js',
             tasks: ['jasmine']
-        }
+        },
+    browserify: {
+      'src/arrayExtensions.js': ['dest/arrayExtensions.js']
+    }
   });
 
   grunt.loadNpmTasks('grunt-http-server');
   grunt.loadNpmTasks('grunt-contrib-jasmine');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  //grunt.loadNpmTasks('grunt-browserify');
   
 
   // Default task(s).
-  grunt.registerTask('default', ['jasmine']);
+  grunt.registerTask('default', ['watch']);
 
 };

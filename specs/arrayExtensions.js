@@ -1,36 +1,38 @@
 
-/*
-describe("Each", function() {
-    it("should receive a valid callback function", function() {
-    	people.each(logPerson);
 
-    	expect(logPerson).toBeDefined();
-    	expect(typeof logPerson).toBe('function');
-    });
+// describe("Each", function() {
+//     it("should receive a valid callback function", function() {
+//     	people.each(logPerson);
 
-    it("should return context", function() {
-    	var b = people.each(logPerson);
+//     	expect(logPerson).toBeDefined();
+//     	expect(typeof logPerson).toBe('function');
+//     });
 
-    	expect(b).toEqual(people);
-    });
-});
-*/
-describe("Where", function() {
-    it("should create a new array with the set of matching elements", function() {
-		var p = people.where(function(person) {
+//     it("should return context", function() {
+//     	var b = people.each(logPerson);
+
+//     	expect(b).toEqual(people);
+//     });
+// });
+//
+
+// describe("Where", function() {
+//     it("should create a new array with the set of matching elements", function() {
+// 		var p = people.where(function(person) {
 			
-			var skills = person.skills.where(function(skill) { 
-				return skill == 'PHP'; 
-			});
+// 			var skills = person.skills.where(function(skill) { 
+// 				return skill == 'PHP'; 
+// 			});
 
-			return skills.length == 0; 
-		})
-		.each(logPerson);
+// 			return skills.length == 0; 
+// 		})
+// 		.each(logPerson);
 
-		expect(p instanceof Array).toBeTruthy();
-		expect(p.length).toEqual(2);
-	});
-});
+// 		expect(p instanceof Array).toBeTruthy();
+// 		expect(p.length).toEqual(2);
+// 	});
+// });
+
 /*
 describe("Any", function() {
 	
@@ -91,4 +93,48 @@ describe("Select", function() {
 		expect(p).toEqual(["pedro", "pablo"]);
 	});
 });
+
+describe("Select", function() {
+	it("should return an array with the name of the developers who have PHP skills", function() {
+		var p = people.where(function(dev) {
+			return !dev.skills.any('PHP'); 
+		})
+		.select(function(dev) {
+			return dev.name; 
+		})
+		.each(function(x) {
+			console.log(x); 
+		});
+
+		expect(p).toEqual(["pedro", "pablo"]);
+	});
+});
+
+describe("Take", function() {
+	it("should return an array with the first howMany elements if spec is not present", function() {
+		var ch = children.take(3, function(x){ return x.sex == 'f';})
+		.select(function(dev) {
+			return dev.name; 
+		})
+		.each(function(x) {
+			console.log(x); 
+		});
+
+		expect(ch.length).toEqual(3);
+	});
+});
 */
+
+describe("Take", function() {
+	it("should return an array with the first howMany elements if spec is not present", function() {
+		var ch = children.take(3, function(x){ return x.sex == 'f';})
+		.select(function(dev) {
+			return dev.name; 
+		})
+		.each(function(x) {
+			console.log(x); 
+		});
+
+		expect(ch.length).toEqual(3);
+	});
+});
