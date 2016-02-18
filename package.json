@@ -1,0 +1,10 @@
+{
+  "name": "excercises",
+  "version": "0.1.0",
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-contrib-jasmine": "1.0.0",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-http-server": "1.14.0"
+  }
+}
