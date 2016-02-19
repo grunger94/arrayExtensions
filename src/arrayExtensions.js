@@ -19,76 +19,159 @@ logPerson = function(person, i){
 },
 i;
 
-Array.prototype.each = function(callback) {
-	for(i = 0; i < this.length; i += 1) {
-		callback(this[i], i);
+(function(Arr) {
+	Arr.each = function(callback) {
+		for(i = 0; i < this.length; i += 1) {
+			callback(this[i], i);
+		}
+
+		return this;
+	};
+
+	Arr.where = function(callback) {
+		var matches = [];
+
+		this.each.call(this, function(x, i) {
+			if(callback(x)) {
+				matches.push(x);
+			}
+		});
+		
+		return matches;
 	}
 
-	return this;
-};
+	Arr.any = function(spec) {
+		var match;
 
-Array.prototype.where = function(callback) {
-	var matches = [];
-
-	console.log(this);
-
-	this.each.call(this, function(x, i) {
-		if(callback(x)) {
-			matches.push(x);
+		if(spec) {
+			if(typeof spec === 'function') {
+				this.where(function(x, i) {
+					return match = spec(x, i);
+				});
+			}
+			else if(typeof spec === 'string') {
+				this.where(function(x, i) {
+					return match = (spec == x);
+				});
+			}
+			else {
+				throw "Invalid spec format";
+			}
 		}
 
+		return match || false;
+	};
 
-	});
-	
-	return matches;
-}
+	Arr.select = function(callback) {
+		var excerpts = [];
 
-Array.prototype.any = function(spec) {
-	var match;
+		this.each(function(x, i) {
+			excerpts.push(callback(x));
+		});
 
-	if(spec) {
-		if(typeof spec === 'function') {
-			this.where(function(x, i) {
-				return match = spec(x, i);
-			});
+		return excerpts;
+	};
+
+	Arr.take = function(howMany, spec) {
+		var items = [];
+
+		if(spec && typeof spec === 'function') {
+			items = this.where(spec).slice(0, howMany);
 		}
-		else if(typeof spec === 'string') {
-			this.where(function(x, i) {
-				return match = (spec == x);
+		else {
+			items = this.slice(0, howMany);
+		}
+
+		return items;
+	};
+
+	Arr.skip = function(howMany) {
+		var items = [];
+
+		matches = this.slice(howMany, this.length);
+
+		return matches;
+	};
+
+	Arr.first = function(spec) {
+		var elem = null;
+
+		if(spec && typeof spec === 'function') {
+			elem = this.where(spec)[0];
+		}
+		else {
+			elem = this[0];
+		}
+
+		return elem;
+	};
+
+	Arr.last = function(spec) {
+		var elem = null;
+
+		if(spec && typeof spec === 'function') {
+			this.reverse();
+			elem = this.first(spec);
+		}
+		else {
+			elem = this[this.length - 1];
+		}
+
+		return elem;
+	};
+
+	Arr.count = function(spec) {
+		var count = 0;
+
+		if(spec && typeof spec === 'function') {
+			this.each(function(x, i) {
+				if(spec(x)) {
+					count++;
+				}
 			});
 		}
 		else {
-			throw "Invalid spec format";
+			count = this.length;
 		}
-	}
 
-	return match || false;
-};
+		return count;
+	};
 
-Array.prototype.select = function(callback) {
-	var excerpts = [];
+	Arr.index = function(spec) {
+		var ix = -1;
 
-	this.each(function(x, i) {
-		excerpts.push(callback(x));
-	});
+		if(spec && typeof spec === 'function') {
+			this.each(function(x, i) {
+				if(spec(x)) {
+					ix = i;
+				}
+			});
+		}
+		else {
+			ix = this.indexOf(spec);
+		}
 
-	return excerpts;
-};
+		return ix;
+	};
 
-Array.prototype.take = function(howMany, spec) {
-	var matches = [];
+	Arr.pluck = function(spec) {
+		var array = [];
 
-	if(spec && typeof spec === 'function') {
-		matches = this.where(spec).slice(0, howMany);
-	}
-	else {
-		matches = this.slice(0, howMany);
-	}
+		if(spec && typeof spec === 'string') {
+			this.each(function(x, i) {
+				if(x.hasOwnProperty(spec)) {
+					array.push(x[spec]);
+				}
+			});
+		}
 
-	return matches;
-};
+		return array;
+	};
+}(Array.prototype));
+
 
 (function() {
+	console.log(children.pluck('name'));
 	// var p = people.where(function(person) {
 			
 	// 	var skills = person.skills.where(function(skill) { 
