@@ -13,27 +13,34 @@ people = [
 	{name: 'pedro', age: 29, skills: ['C#', 'Asp.Net', 'OOP'] }, 
 	{name:'juan',age:23,skills:['PHP','Drinktea'] }, 
 	{name: 'pablo', age: 26, skills: ['RoR', 'HTML/CSS'] }
-],
-logPerson = function(person, i){
-	console.log((i + 1) + '.­ ' + person.name + ' is ' + person.age + ' years old')
-},
-i;
+];
 
 (function(Arr) {
+	var array = [], arrayFlatten = [], elem;
+
 	Arr.each = function(callback) {
-		for(i = 0; i < this.length; i += 1) {
-			callback(this[i], i);
+		var stop;
+
+		for(var i = 0; i < this.length; i += 1) {
+			stop = callback(this[i], i, this);
+
+			if(stop === true)
+				break;
 		}
 
 		return this;
 	};
 
-	Arr.where = function(callback) {
+	Arr.where = function(callback, howMany) {
 		var matches = [];
 
-		this.each.call(this, function(x, i) {
+		this.each(function eachCB(x) {
 			if(callback(x)) {
 				matches.push(x);
+
+				if(howMany == matches.length) {
+					return true;
+				}
 			}
 		});
 		
@@ -45,14 +52,14 @@ i;
 
 		if(spec) {
 			if(typeof spec === 'function') {
-				this.where(function(x, i) {
-					return match = spec(x, i);
-				});
+				this.where(function(x) {
+					return match = spec(x);
+				}, 1);
 			}
 			else if(typeof spec === 'string') {
-				this.where(function(x, i) {
+				this.where(function whereCB(x) {
 					return match = (spec == x);
-				});
+				}, 1);
 			}
 			else {
 				throw "Invalid spec format";
@@ -63,58 +70,59 @@ i;
 	};
 
 	Arr.select = function(callback) {
-		var excerpts = [];
+		array = [];
 
-		this.each(function(x, i) {
-			excerpts.push(callback(x));
+		this.each(function(x) {
+			array.push(callback(x));
 		});
 
-		return excerpts;
+		return array;
 	};
 
 	Arr.take = function(howMany, spec) {
-		var items = [];
+		array = [];
 
 		if(spec && typeof spec === 'function') {
-			items = this.where(spec).slice(0, howMany);
+			array = this.where(spec, howMany);
 		}
 		else {
-			items = this.slice(0, howMany);
+			array = this.slice(0, howMany);
 		}
 
-		return items;
+		return array;
 	};
 
 	Arr.skip = function(howMany) {
-		var items = [];
-
-		matches = this.slice(howMany, this.length);
-
-		return matches;
+		return this.slice(howMany, this.length);
 	};
 
 	Arr.first = function(spec) {
-		var elem = null;
+		elem = null;
 
-		if(spec && typeof spec === 'function') {
-			elem = this.where(spec)[0];
-		}
-		else {
-			elem = this[0];
+		if(this.length > 0) {
+			if(spec && typeof spec === 'function') {
+				elem = this.where(spec);
+				elem = elem.length > 0 ? elem[0] : null;
+			}
+			else {
+				elem = this[0];
+			}
 		}
 
 		return elem;
 	};
 
 	Arr.last = function(spec) {
-		var elem = null;
+		elem = null;
 
-		if(spec && typeof spec === 'function') {
-			this.reverse();
-			elem = this.first(spec);
-		}
-		else {
-			elem = this[this.length - 1];
+		if(this.length > 0) {
+			if(spec && typeof spec === 'function') {
+				this.reverse();
+				elem = this.first(spec);
+			}
+			else {
+				elem = this[this.length - 1];
+			}
 		}
 
 		return elem;
@@ -124,7 +132,7 @@ i;
 		var count = 0;
 
 		if(spec && typeof spec === 'function') {
-			this.each(function(x, i) {
+			this.each(function(x) {
 				if(spec(x)) {
 					count++;
 				}
@@ -144,6 +152,7 @@ i;
 			this.each(function(x, i) {
 				if(spec(x)) {
 					ix = i;
+					return true;
 				}
 			});
 		}
@@ -153,12 +162,14 @@ i;
 
 		return ix;
 	};
+	
+	// console.log(children.index(function(x) { return x.name == 'bany'; }));
 
 	Arr.pluck = function(spec) {
-		var array = [];
+		array = [];
 
 		if(spec && typeof spec === 'string') {
-			this.each(function(x, i) {
+			this.each(function(x) {
 				if(x.hasOwnProperty(spec)) {
 					array.push(x[spec]);
 				}
@@ -167,23 +178,104 @@ i;
 
 		return array;
 	};
+
+	Arr.sum = function(spec) {
+		var result = 0;
+
+		if(spec && typeof spec === 'function') {
+			this.each(function(x) {
+				result += spec(x);
+			});
+		}
+		else {
+			this.each(function(x) {
+				result += (x);
+			});
+		}
+
+		return result;
+	};
+
+	Arr.max = function(comparer) {
+		var max, b, res;
+
+		if(comparer && typeof comparer == "function") {
+			this.each(function(a, i, origin) {
+				if(origin[i + 1]) {
+					if(max) {
+						a = max;
+					}
+					else {
+						max = a;
+					}
+
+					b = origin[i + 1];
+
+					res = comparer(a, b);
+					
+					if(res <= 0) {
+						max = b;
+					}
+				}
+			});
+		} 
+		else {
+			this.each(function(x) {
+				if(max == undefined || x > max) {
+					max = x;
+				}
+			});
+		}
+		
+		return max;
+	};
+
+	Arr.min = function(comparer) {
+		var min, b, res;
+
+		if(comparer && typeof comparer == "function") {
+			this.each(function(a, i, origin) {
+				if(origin[i + 1]) {
+					if(min) {
+						a = min;
+					}
+					else {
+						min = a;
+					}
+
+					b = origin[i + 1];
+
+					res = comparer(a, b);
+					
+					if(res >= 0) {
+						min = b;
+					}
+				}
+			});
+		} 
+		else {
+			this.each(function(x) {
+				if(min == undefined || x < min) {
+					min = x;
+				}
+			});
+		}
+		
+		return min;
+	};
+
+	Arr.flatten = function() {
+		arrayFlatten = arrayFlatten || [];
+
+		this.each(function(x) {		
+			if(x instanceof Array) {
+				Arr.flatten.call(x);
+			}
+			else {
+				arrayFlatten.push(x);
+			}
+		});
+
+		return arrayFlatten;
+	};
 }(Array.prototype));
-
-
-(function() {
-	console.log(children.pluck('name'));
-	// var p = people.where(function(person) {
-			
-	// 	var skills = person.skills.where(function(skill) { 
-	// 		return skill == 'PHP'; 
-	// 	});
-
-	// 	return skills.length == 0; 
-	// })
-	// .each(logPerson);
-
-	// var p = people.where(function(person) {
-	// 		return person.age >= 26;
-	// 	})
-	// 	.each(logPerson);
-})();
